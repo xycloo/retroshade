@@ -1,0 +1,20 @@
+[package]
+name = "retroshade"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+soroban-env-host = { path = "../rs-soroban-env/soroban-env-host", features = [
+    "testutils",
+] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+rusqlite = "0.32.1"
+#tokio = { version = "1", features = ["full"] }
+sha2 = "0.10.8"
+rand = "0.8.5"
+stellar-strkey = "0.0.8"
+postgres-types = "0.2.7"
+hex = "0.4.3"
+num-bigint = "0.4"
+num-traits = "0.2"
