@@ -1,0 +1,3 @@
+[submodule "retroshades-svm-fork"]
+	path = retroshades-svm-fork
+	url = https://github.com/xycloo/retroshades-svm-fork

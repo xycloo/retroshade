@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-soroban-env-host = { path = "../rs-soroban-env/soroban-env-host", features = [
+soroban-env-host = { path = "../retroshades-svm-fork/soroban-env-host", features = [
     "testutils",
 ] }
 serde = { version = "1.0", features = ["derive"] }
