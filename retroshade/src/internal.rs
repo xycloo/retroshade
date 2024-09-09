@@ -101,6 +101,13 @@ pub fn execute_svm(
     ledger_entries_with_ttl: Vec<(LedgerEntry, Option<u32>)>,
     prng_seed: &[u8; 32],
 ) -> Result<InvokeHostFunctionHelperResult, HostError> {
+    println!(
+        "{}\n{}\n{}",
+        serde_json::to_string(&host_fn).unwrap(),
+        serde_json::to_string(&resources).unwrap(),
+        serde_json::to_string(&ledger_entries_with_ttl).unwrap()
+    );
+
     let limits = Limits::none();
     let encoded_host_fn = host_fn.to_xdr(limits.clone()).unwrap();
     let encoded_resources = resources.to_xdr(limits.clone()).unwrap();
