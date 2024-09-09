@@ -141,9 +141,8 @@ pub fn execute_svm(
         .collect();
     let budget = Budget::default();
 
-    budget
-        .reset_cpu_limit(resources.instructions as u64)
-        .unwrap();
+    budget.reset_unlimited()?;
+
     let mut diagnostic_events = Vec::<DiagnosticEvent>::new();
     let res = invoke_host_function(
         &budget,
