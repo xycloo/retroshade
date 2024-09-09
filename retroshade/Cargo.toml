@@ -9,7 +9,7 @@ soroban-env-host = { path = "../retroshades-svm-fork/soroban-env-host", features
 ] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-rusqlite = "0.32.1"
+rusqlite = "0.31.0"
 #tokio = { version = "1", features = ["full"] }
 sha2 = "0.10.8"
 rand = "0.8.5"

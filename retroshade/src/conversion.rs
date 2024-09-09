@@ -65,31 +65,31 @@ impl From<ScVal> for FromScVal {
                 kind: TypeKind::Boolean(b),
             },
             ScVal::Void => FromScVal {
-                dbtype: Type::VOID,
+                dbtype: Type::TEXT,
                 kind: TypeKind::Void,
             },
             ScVal::U32(n) => FromScVal {
-                dbtype: Type::INT4,
+                dbtype: Type::NUMERIC,
                 kind: TypeKind::Numeric(n.to_string()),
             },
             ScVal::I32(n) => FromScVal {
-                dbtype: Type::INT4,
+                dbtype: Type::NUMERIC,
                 kind: TypeKind::Numeric(n.to_string()),
             },
             ScVal::U64(n) => FromScVal {
-                dbtype: Type::INT8,
+                dbtype: Type::NUMERIC,
                 kind: TypeKind::Numeric(n.to_string()),
             },
             ScVal::I64(n) => FromScVal {
-                dbtype: Type::INT8,
+                dbtype: Type::NUMERIC,
                 kind: TypeKind::Numeric(n.to_string()),
             },
             ScVal::Timepoint(t) => FromScVal {
-                dbtype: Type::TIMESTAMP,
+                dbtype: Type::NUMERIC,
                 kind: TypeKind::Numeric(t.0.to_string()),
             },
             ScVal::Duration(d) => FromScVal {
-                dbtype: Type::INTERVAL,
+                dbtype: Type::NUMERIC,
                 kind: TypeKind::Numeric(d.0.to_string()),
             },
             ScVal::U256(_) => FromScVal {

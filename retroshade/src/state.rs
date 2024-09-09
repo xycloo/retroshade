@@ -88,8 +88,10 @@ impl RetroshadesExecution {
 
     pub(crate) fn replace_binaries(
         &mut self,
-        mercury_contracts: HashMap<Hash, Vec<u8>>,
-    ) -> Result<(), RetroshadeError> {
+        mercury_contracts: HashMap<Hash, &[u8]>,
+    ) -> Result<bool, RetroshadeError> {
+        let mut replaced = false;
+
         let binaries_mutation = {
             let mut binaries_mutation = HashMap::new();
 
@@ -104,7 +106,7 @@ impl RetroshadesExecution {
                             if let ScVal::LedgerKeyContractInstance = data.key {
                                 if let ScVal::ContractInstance(instance) = &data.val {
                                     if let ContractExecutable::Wasm(wasm) = &instance.executable {
-                                        binaries_mutation.insert(wasm.clone(), new_code.clone());
+                                        binaries_mutation.insert(wasm.clone(), new_code);
                                     }
                                 };
                             }
@@ -121,12 +123,13 @@ impl RetroshadesExecution {
         for entry in self.target_pre_execution_state.iter_mut() {
             if let LedgerEntryData::ContractCode(code_entry) = &mut entry.0.data {
                 if let Some(new_code) = binaries_mutation.get(&code_entry.hash) {
-                    code_entry.code = new_code.clone().try_into().unwrap();
+                    replaced = true;
+                    code_entry.code = new_code.to_vec().try_into().unwrap();
                 }
             }
         }
 
-        Ok(())
+        Ok(replaced)
     }
 
     fn process_operation(

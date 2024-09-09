@@ -141,9 +141,16 @@ fn simple() {
         .unwrap(),
     };
 
-    retroshades
-        .build_from_envelope_and_meta(Box::new(snapshot_source), envelope, meta, HashMap::new())
+    let mut mercury_contracts = HashMap::new();
+    let binary = std::fs::read("/Users/tdep/projects/retroshade/examples/hello_world/target/wasm32-unknown-unknown/release/soroban_hello_world_contract_retroshade.wasm").unwrap();
+    mercury_contracts.insert(Hash([0; 32]), binary.as_slice());
+
+    let replaced = retroshades
+        .build_from_envelope_and_meta(Box::new(snapshot_source), envelope, meta, mercury_contracts)
         .unwrap();
+
+    assert_eq!(replaced, true);
+
     let retroshades = retroshades.retroshade().unwrap();
 
     assert_eq!(

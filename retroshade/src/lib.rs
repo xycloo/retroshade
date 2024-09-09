@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use conversion::FromScVal;
 use internal::execute_svm;
-use serde::{Deserialize, Serialize};
+pub use soroban_env_host;
 use soroban_env_host::{
     storage::SnapshotSource,
     xdr::{
@@ -12,8 +12,7 @@ use soroban_env_host::{
     zephyr::RetroshadeExport,
     HostError, LedgerInfo,
 };
-
-mod conversion;
+pub mod conversion;
 mod internal;
 mod state;
 
@@ -124,13 +123,12 @@ impl RetroshadesExecution {
         snapshot_source: Box<dyn SnapshotSource>,
         tx_envelope: TransactionV1Envelope,
         tx_meta: TransactionMetaV3,
-        mercury_contracts: HashMap<Hash, Vec<u8>>,
-    ) -> Result<(), RetroshadeError> {
+        mercury_contracts: HashMap<Hash, &[u8]>,
+    ) -> Result<bool, RetroshadeError> {
         self.build_current_state(snapshot_source, tx_envelope)?;
         self.state_reset_to_pre_execution(tx_meta)?;
-        self.replace_binaries(mercury_contracts)?;
 
-        Ok(())
+        self.replace_binaries(mercury_contracts)
     }
 
     pub fn retroshade(&self) -> Result<RetroshadeExecutionResult, RetroshadeError> {
@@ -205,6 +203,4 @@ impl RetroshadesExecution {
             diagnostic: retroshade_exec.diagnostic,
         })
     }
-
-    //fn convert_retroshades()
 }

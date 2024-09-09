@@ -22,14 +22,14 @@ pub struct HelloContract;
 #[contractimpl]
 impl HelloContract {
     pub fn t(env: Env) -> () {
-        let target = symbol_short!("test").as_val().get_payload() as i64;
+        /*let target = symbol_short!("test").as_val().get_payload() as i64;
         let event = FirstRetroshade {
             test: env.current_contract_address(),
         };
         let event: Val = event.into_val(&env);
         let event = event.get_payload() as i64;
 
-        unsafe { zephyr_emit(target, event) };
+        unsafe { zephyr_emit(target, event) };*/
     }
 }
 
