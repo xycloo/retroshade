@@ -148,11 +148,40 @@ impl RetroshadesExecution {
                     }
                     current_state = None;
                 }
+                LedgerEntryChange::Created(entry) => {
+                    self.remove_entry(entry, changed);
+                }
                 _ => {}
             }
         }
 
         Ok(())
+    }
+
+    fn remove_entry(&mut self, current_state_entry: &LedgerEntry, changed: &mut bool) {
+        // note: should only be one entry but we do this for consistency.
+        let mut to_delete = Vec::new();
+
+        for (idx, entry) in self.target_pre_execution_state.iter().enumerate() {
+            match &entry.0.data {
+                LedgerEntryData::ContractCode(_) => {
+                    // this should not happen in general. We ignore for wasm uploads.
+                }
+                LedgerEntryData::ContractData(data) => {
+                    if let LedgerEntryData::ContractData(pre_data) = &current_state_entry.data {
+                        if data.contract == pre_data.contract && data.key == pre_data.key {
+                            to_delete.push(idx);
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
+
+        for idx in to_delete {
+            self.target_pre_execution_state.remove(idx);
+            *changed = true
+        }
     }
 
     fn update_entries(&mut self, pre_execution: &LedgerEntry, changed: &mut bool) {
