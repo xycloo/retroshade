@@ -94,7 +94,7 @@ impl HelloContract {
 
         #[cfg(feature = "mercury")]
         LiquidityPools {
-            pools: admin.clone(),
+            pools: pool_address.clone(),
         }
         .emit(&env);
 

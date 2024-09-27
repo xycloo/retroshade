@@ -6,7 +6,7 @@ pub use soroban_env_host;
 use soroban_env_host::{
     storage::SnapshotSource,
     xdr::{
-        AccountId, DiagnosticEvent, Hash, HostFunction, LedgerEntry, ScVal,
+        AccountId, DiagnosticEvent, Hash, HostFunction, LedgerEntry, LedgerKey, ScVal,
         SorobanAuthorizationEntry, SorobanResources, TransactionMetaV3, TransactionV1Envelope,
     },
     zephyr::RetroshadeExport,
@@ -43,7 +43,7 @@ pub struct RetroshadesExecution {
 pub enum RetroshadeError {
     SVMHost(HostError),
     NotSorobanTx,
-    EntryNotFound,
+    EntryNotFound(LedgerKey),
     MissingContext,
     MalformedXdr,
     MalformedRetroshadeEvent,
