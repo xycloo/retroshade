@@ -203,6 +203,14 @@ impl RetroshadesExecution {
                         }
                     }
                 }
+                LedgerEntryData::Trustline(data) => {
+                    if let LedgerEntryData::Trustline(pre_data) = &pre_execution.data {
+                        if data.asset == pre_data.asset && data.account_id == pre_data.account_id {
+                            *entry = (pre_execution.clone(), entry.1);
+                            *changed = true;
+                        }
+                    }
+                }
                 _ => {}
             }
         }

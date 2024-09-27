@@ -79,6 +79,32 @@ impl SnapshotSource for DynamicSnapshot {
     ) -> Result<Option<soroban_env_host::storage::EntryWithLiveUntil>, soroban_env_host::HostError>
     {
         let entry: Option<EntryWithLiveUntil> = match key.as_ref() {
+            LedgerKey::Trustline(trustline) => {
+                let PublicKey::PublicKeyTypeEd25519(Uint256(bytes)) = trustline.account_id.0;
+                let account_id = stellar_strkey::ed25519::PublicKey(bytes).to_string();
+                let asset_xdr = trustline.asset.to_xdr_base64(Limits::none()).unwrap();
+
+                let conn = Connection::open("/tmp/rs_ingestion_temp/stellar.db").unwrap();
+                let query_string = format!(
+                    "SELECT ledgerentry FROM trustlines where accountid = ?1 AND asset = ?2"
+                );
+
+                let mut stmt = conn.prepare(&query_string).unwrap();
+                let mut entries = stmt.query(params![account_id, asset_xdr]).unwrap();
+
+                let row = entries.next().unwrap();
+
+                if row.is_none() {
+                    return Ok(None);
+                }
+                let row = row.unwrap();
+
+                let xdr_entry: String = row.get(0).unwrap();
+                let xdr_entry = LedgerEntry::from_xdr_base64(xdr_entry, Limits::none()).unwrap();
+
+                Some((Rc::new(xdr_entry), None))
+            }
+
             LedgerKey::Account(key) => {
                 let PublicKey::PublicKeyTypeEd25519(ed25519) = key.account_id.0.clone();
                 let id = stellar_strkey::ed25519::PublicKey(ed25519.0).to_string();
