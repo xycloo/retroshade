@@ -1,7 +1,7 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, rc::Rc};
 
 use conversion::FromScVal;
-use internal::execute_svm;
+use internal::{execute_svm, execute_svm_in_recording_mode};
 pub use soroban_env_host;
 use soroban_env_host::{
     storage::SnapshotSource,
@@ -158,9 +158,46 @@ impl RetroshadesExecution {
         }
     }
 
+    pub fn retroshade_recording(
+        &self,
+        ledger_snapshot: Rc<dyn SnapshotSource>,
+    ) -> Result<RetroshadeExecutionResult, RetroshadeError> {
+        let svm_execution = execute_svm_in_recording_mode(
+            true,
+            self.host_function
+                .as_ref()
+                .ok_or(RetroshadeError::MissingContext)?,
+            self.source_account
+                .as_ref()
+                .ok_or(RetroshadeError::MissingContext)?,
+            self.ledger_info.clone(),
+            rand::random::<[u8; 32]>(),
+            ledger_snapshot,
+        );
+
+        match svm_execution {
+            Ok(result) => Ok(RetroshadeExecutionResult {
+                retroshades: result.retroshades,
+                diagnostic: result.diagnostic_events,
+            }),
+            Err(host_error) => Err(RetroshadeError::SVMHost(host_error)),
+        }
+    }
+
     /// Perfect for exporting to SQL databases.
     pub fn retroshade_packed(&self) -> Result<RetroshadeExecutionResultPretty, RetroshadeError> {
         let retroshade_exec = self.retroshade()?;
+
+        println!("Checking successful contract call");
+        if let Some(first) = retroshade_exec.diagnostic.get(0) {
+            if !first.in_successful_contract_call {
+                println!(
+                    "\nError while executing retroshades: \n{:?}",
+                    retroshade_exec.diagnostic
+                )
+            }
+        }
+
         let mut pretty_retroshades = Vec::new();
 
         for retroshade in retroshade_exec.retroshades {
