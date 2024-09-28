@@ -252,11 +252,11 @@ impl ToSql for FromScVal {
             ty,
             &Type::BOOL
                 | &Type::TEXT
-                | &Type::NUMERIC
+                | &Type::FLOAT8
                 | &Type::BYTEA
                 | &Type::BOOL_ARRAY
                 | &Type::TEXT_ARRAY
-                | &Type::NUMERIC_ARRAY
+                | &Type::FLOAT8_ARRAY
         )
     }
 
