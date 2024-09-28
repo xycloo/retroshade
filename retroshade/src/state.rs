@@ -211,6 +211,16 @@ impl RetroshadesExecution {
                         }
                     }
                 }
+
+                LedgerEntryData::Account(data) => {
+                    if let LedgerEntryData::Account(pre_data) = &pre_execution.data {
+                        if data.account_id == pre_data.account_id {
+                            *entry = (pre_execution.clone(), entry.1);
+                            *changed = true;
+                        }
+                    }
+                }
+
                 _ => {}
             }
         }
