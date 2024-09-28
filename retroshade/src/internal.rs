@@ -123,7 +123,6 @@ pub fn execute_svm_in_recording_mode(
         &mut diagnostic_events,
     )?;
 
-    println!("{:?}", diagnostic_events);
     Ok(InvokeHostFunctionHelperResult {
         invoke_result: res.invoke_result,
         ledger_changes: res.ledger_changes.into_iter().map(|c| c.into()).collect(),
@@ -201,7 +200,6 @@ pub fn execute_svm(
         &mut diagnostic_events,
     )?;
 
-    println!("{:?}", diagnostic_events);
     Ok(InvokeHostFunctionHelperResult {
         invoke_result: res
             .encoded_invoke_result
