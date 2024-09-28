@@ -1,12 +1,17 @@
 //! This module handles the pretty-print of ScVals in order for them to be
 //! consumed and potentially efficiently filtered within the db.
 
+use std::error::Error;
+
+use bytes::BytesMut;
 use num_bigint::BigInt;
 use num_traits::FromPrimitive;
-use postgres_types::Type;
+use postgres_types::{to_sql_checked, IsNull, ToSql, Type};
 use soroban_env_host::xdr::{
-    Int128Parts, Int256Parts, PublicKey, ScAddress, ScVal, UInt128Parts, UInt256Parts,
+    Int128Parts, Int256Parts, PublicKey, ScAddress, ScVal, ScVec, UInt128Parts, UInt256Parts,
 };
+
+const MAX_ALLOWED_RECURSION_DEPTH: usize = 1;
 
 pub fn i256_to_bigint(parts: Int256Parts) -> BigInt {
     let hi =
@@ -44,7 +49,7 @@ pub fn num_to_string(parts: ScVal) -> String {
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum TypeKind {
-    TextArray(Vec<String>), // currently unused.
+    GenericArray(Vec<FromScVal>), // Note: max allowed recursion depth is one.
     Text(String),
     Boolean(bool),
     Void,
@@ -57,8 +62,8 @@ pub struct FromScVal {
     pub kind: TypeKind,
 }
 
-impl From<ScVal> for FromScVal {
-    fn from(value: ScVal) -> Self {
+impl FromScVal {
+    pub fn from_scval(value: ScVal, recursion_depth: &mut usize) -> Self {
         match value {
             ScVal::Bool(b) => FromScVal {
                 dbtype: Type::BOOL,
@@ -112,10 +117,43 @@ impl From<ScVal> for FromScVal {
                 dbtype: Type::TEXT,
                 kind: TypeKind::Text(s.to_string()),
             },
-            ScVal::Vec(v) => FromScVal {
-                dbtype: Type::JSON,
-                kind: TypeKind::Text(serde_json::to_string(&v).unwrap()),
-            },
+            ScVal::Vec(v) => {
+                *recursion_depth += 1;
+
+                if *recursion_depth <= MAX_ALLOWED_RECURSION_DEPTH {
+                    if let Some(ScVec(vecm)) = &v {
+                        let inner_array: Vec<FromScVal> = vecm
+                            .iter()
+                            .map(|element| FromScVal::from_scval(element.clone(), recursion_depth))
+                            .collect();
+
+                        if !inner_array.is_empty()
+                            && inner_array
+                                .iter()
+                                .all(|item| item.dbtype == inner_array[0].dbtype)
+                        {
+                            let dbtype = match inner_array[0].kind {
+                                TypeKind::Boolean(_) => Type::BOOL_ARRAY,
+                                TypeKind::Numeric(_) => Type::NUMERIC_ARRAY,
+                                TypeKind::Text(_) => Type::TEXT_ARRAY,
+                                _ => Type::JSON,
+                            };
+
+                            if dbtype != Type::JSON {
+                                return FromScVal {
+                                    dbtype,
+                                    kind: TypeKind::GenericArray(inner_array),
+                                };
+                            }
+                        }
+                    }
+                }
+
+                FromScVal {
+                    dbtype: Type::JSON,
+                    kind: TypeKind::Text(serde_json::to_string(&v).unwrap()),
+                }
+            }
             ScVal::Map(m) => FromScVal {
                 dbtype: Type::JSON,
                 kind: TypeKind::Text(serde_json::to_string(&m).unwrap()),
@@ -154,4 +192,70 @@ impl From<ScVal> for FromScVal {
             },
         }
     }
+}
+
+impl ToSql for FromScVal {
+    fn to_sql(
+        &self,
+        ty: &Type,
+        out: &mut BytesMut,
+    ) -> Result<IsNull, Box<dyn Error + Sync + Send>> {
+        match &self.kind {
+            TypeKind::GenericArray(arr) => {
+                // For arrays, we need to handle each type separately
+                match self.dbtype {
+                    Type::BOOL_ARRAY => {
+                        let bool_array: Vec<bool> = arr
+                            .iter()
+                            .filter_map(|item| match &item.kind {
+                                TypeKind::Boolean(b) => Some(*b),
+                                _ => None,
+                            })
+                            .collect();
+                        bool_array.to_sql(ty, out)
+                    }
+                    Type::NUMERIC_ARRAY => {
+                        let num_array: Vec<f64> = arr
+                            .iter()
+                            .filter_map(|item| match &item.kind {
+                                TypeKind::Numeric(n) => Some(n.clone().parse().unwrap_or(0.0)),
+                                _ => None,
+                            })
+                            .collect();
+                        num_array.to_sql(ty, out)
+                    }
+                    Type::TEXT_ARRAY => {
+                        let text_array: Vec<String> = arr
+                            .iter()
+                            .filter_map(|item| match &item.kind {
+                                TypeKind::Text(s) => Some(s.clone()),
+                                _ => None,
+                            })
+                            .collect();
+                        text_array.to_sql(ty, out)
+                    }
+                    _ => Err("Unsupported array type".into()),
+                }
+            }
+            TypeKind::Text(s) => s.to_sql(ty, out),
+            TypeKind::Boolean(b) => b.to_sql(ty, out),
+            TypeKind::Void => Ok(IsNull::Yes),
+            TypeKind::Numeric(n) => n.to_sql(ty, out),
+        }
+    }
+
+    fn accepts(ty: &Type) -> bool {
+        matches!(
+            ty,
+            &Type::BOOL
+                | &Type::TEXT
+                | &Type::NUMERIC
+                | &Type::BYTEA
+                | &Type::BOOL_ARRAY
+                | &Type::TEXT_ARRAY
+                | &Type::NUMERIC_ARRAY
+        )
+    }
+
+    to_sql_checked!();
 }

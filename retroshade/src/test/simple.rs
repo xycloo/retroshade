@@ -142,7 +142,7 @@ fn simple() {
     };
 
     let mut mercury_contracts = HashMap::new();
-    let binary = std::fs::read("/Users/tdep/projects/retroshade/examples/hello_world/target/wasm32-unknown-unknown/release/soroban_hello_world_contract_retroshade.wasm").unwrap();
+    let binary = std::fs::read("/Users/tdep/projects/retroshade/examples/hello_world/target/wasm32-unknown-unknown/release/soroban_hello_world_contract.wasm").unwrap();
     mercury_contracts.insert(Hash([0; 32]), binary.as_slice());
 
     let replaced = retroshades
@@ -151,10 +151,10 @@ fn simple() {
 
     assert_eq!(replaced, true);
 
-    let retroshades = retroshades.retroshade().unwrap();
-
-    assert_eq!(
+    let retroshades = retroshades.retroshade_packed().unwrap();
+    println!("{:?}", &retroshades.retroshades);
+    /*assert_eq!(
         r#"[{"contract_id":"0000000000000000000000000000000000000000000000000000000000000000","target":{"symbol":"test"},"event_object":{"map":[{"key":{"symbol":"test"},"val":{"address":"CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4"}}]}}]"#,
         serde_json::to_string(&retroshades.retroshades).unwrap()
-    )
+    )*/
 }

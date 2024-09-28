@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+bytes = "1.6.0"
 soroban-env-host = { path = "../retroshades-svm-fork/soroban-env-host", features = [
     "testutils",
     "recording_mode",

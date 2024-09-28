@@ -905,6 +905,7 @@ dependencies = [
 name = "retroshade"
 version = "0.1.0"
 dependencies = [
+ "bytes",
  "hex",
  "num-bigint",
  "num-traits",

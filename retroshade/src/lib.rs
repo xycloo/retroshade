@@ -216,7 +216,7 @@ impl RetroshadesExecution {
                     } else {
                         return Err(RetroshadeError::MalformedRetroshadeEvent);
                     },
-                    value: key_value.val.into(),
+                    value: FromScVal::from_scval(key_value.val, &mut 0),
                 };
 
                 packed_event_entries.push(packed_entry);

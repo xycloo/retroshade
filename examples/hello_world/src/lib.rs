@@ -15,6 +15,8 @@ extern "C" {
 pub struct FirstRetroshade {
     test: Address,
     amount: i128,
+
+    somev: Vec<Address>,
 }
 
 #[contract]
@@ -27,6 +29,7 @@ impl HelloContract {
         let event = FirstRetroshade {
             test: env.current_contract_address(),
             amount: 990,
+            somev: soroban_sdk::vec![&env, env.current_contract_address()],
         };
         let event: Val = event.into_val(&env);
         let event = event.get_payload() as i64;
