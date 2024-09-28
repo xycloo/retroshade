@@ -240,7 +240,10 @@ impl ToSql for FromScVal {
             TypeKind::Text(s) => s.to_sql(ty, out),
             TypeKind::Boolean(b) => b.to_sql(ty, out),
             TypeKind::Void => Ok(IsNull::Yes),
-            TypeKind::Numeric(n) => n.to_sql(ty, out),
+            TypeKind::Numeric(n) => {
+                let n: f64 = n.parse().unwrap_or(0.0);
+                n.to_sql(ty, out)
+            }
         }
     }
 
