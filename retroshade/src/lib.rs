@@ -2,6 +2,7 @@ use std::{collections::HashMap, rc::Rc};
 
 use conversion::FromScVal;
 use internal::{execute_svm, execute_svm_in_recording_mode};
+use snapshot::InternalSnapshot;
 pub use soroban_env_host;
 use soroban_env_host::{
     storage::SnapshotSource,
@@ -14,6 +15,7 @@ use soroban_env_host::{
 };
 pub mod conversion;
 mod internal;
+mod snapshot;
 mod state;
 
 #[cfg(test)]
@@ -162,6 +164,9 @@ impl RetroshadesExecution {
         &self,
         ledger_snapshot: Rc<dyn SnapshotSource>,
     ) -> Result<RetroshadeExecutionResult, RetroshadeError> {
+        let internal_snapshot =
+            InternalSnapshot::new(ledger_snapshot, self.target_pre_execution_state.clone());
+
         let svm_execution = execute_svm_in_recording_mode(
             true,
             self.host_function
@@ -172,7 +177,7 @@ impl RetroshadesExecution {
                 .ok_or(RetroshadeError::MissingContext)?,
             self.ledger_info.clone(),
             rand::random::<[u8; 32]>(),
-            ledger_snapshot,
+            Rc::new(internal_snapshot),
         );
 
         match svm_execution {
@@ -184,10 +189,24 @@ impl RetroshadesExecution {
         }
     }
 
-    /// Perfect for exporting to SQL databases.
+    pub fn retroshade_packed_recording(
+        &self,
+        ledger_snapshot: Rc<dyn SnapshotSource>,
+    ) -> Result<RetroshadeExecutionResultPretty, RetroshadeError> {
+        let retroshade_exec = self.retroshade_recording(ledger_snapshot)?;
+        self.retroshade_prepare_for_db(retroshade_exec)
+    }
+
     pub fn retroshade_packed(&self) -> Result<RetroshadeExecutionResultPretty, RetroshadeError> {
         let retroshade_exec = self.retroshade()?;
+        self.retroshade_prepare_for_db(retroshade_exec)
+    }
 
+    /// Perfect for exporting to SQL databases.
+    fn retroshade_prepare_for_db(
+        &self,
+        retroshade_exec: RetroshadeExecutionResult,
+    ) -> Result<RetroshadeExecutionResultPretty, RetroshadeError> {
         println!("Checking successful contract call");
         if let Some(first) = retroshade_exec.diagnostic.get(0) {
             if !first.in_successful_contract_call {
