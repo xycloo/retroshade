@@ -167,7 +167,6 @@ impl RetroshadesExecution {
         let internal_snapshot =
             InternalSnapshot::new(ledger_snapshot, self.target_pre_execution_state.clone());
 
-        println!("executing svm in recording mode");
         let svm_execution = execute_svm_in_recording_mode(
             true,
             self.host_function
@@ -179,11 +178,6 @@ impl RetroshadesExecution {
             self.ledger_info.clone(),
             rand::random::<[u8; 32]>(),
             Rc::new(internal_snapshot),
-        );
-
-        println!(
-            "executed svm in recording mode {:?}",
-            svm_execution.as_ref().unwrap().retroshades
         );
 
         match svm_execution {
@@ -199,9 +193,7 @@ impl RetroshadesExecution {
         &self,
         ledger_snapshot: Rc<dyn SnapshotSource>,
     ) -> Result<RetroshadeExecutionResultPretty, RetroshadeError> {
-        println!("executing recording");
         let retroshade_exec = self.retroshade_recording(ledger_snapshot)?;
-        println!("executed recording");
         self.retroshade_prepare_for_db(retroshade_exec)
     }
 
