@@ -31,32 +31,36 @@ impl SnapshotSource for InternalSnapshot {
         key: &Rc<soroban_env_host::xdr::LedgerKey>,
     ) -> Result<Option<soroban_env_host::storage::EntryWithLiveUntil>, soroban_env_host::HostError>
     {
-        if let Some((entry, _)) = self.target_pre_execution_state.iter().find(|(entry, _)| {
-            let entry_key = match &entry.data {
-                LedgerEntryData::Account(account) => LedgerKey::Account(LedgerKeyAccount {
-                    account_id: account.account_id.clone(),
-                }),
-                LedgerEntryData::ContractCode(code) => {
-                    LedgerKey::ContractCode(LedgerKeyContractCode {
-                        hash: code.hash.clone(),
-                    })
-                }
-                LedgerEntryData::ContractData(data) => {
-                    LedgerKey::ContractData(LedgerKeyContractData {
-                        contract: data.contract.clone(),
-                        key: data.key.clone(),
-                        durability: data.durability,
-                    })
-                }
-                LedgerEntryData::Trustline(trustline) => LedgerKey::Trustline(LedgerKeyTrustLine {
-                    asset: trustline.asset.clone(),
-                    account_id: trustline.account_id.clone(),
-                }),
-                _ => return false,
-            };
-            key.as_ref() == &entry_key
-        }) {
-            return Ok(Some((Rc::new(entry.clone()), None)));
+        if let Some((entry, lifetime)) =
+            self.target_pre_execution_state.iter().find(|(entry, _)| {
+                let entry_key = match &entry.data {
+                    LedgerEntryData::Account(account) => LedgerKey::Account(LedgerKeyAccount {
+                        account_id: account.account_id.clone(),
+                    }),
+                    LedgerEntryData::ContractCode(code) => {
+                        LedgerKey::ContractCode(LedgerKeyContractCode {
+                            hash: code.hash.clone(),
+                        })
+                    }
+                    LedgerEntryData::ContractData(data) => {
+                        LedgerKey::ContractData(LedgerKeyContractData {
+                            contract: data.contract.clone(),
+                            key: data.key.clone(),
+                            durability: data.durability,
+                        })
+                    }
+                    LedgerEntryData::Trustline(trustline) => {
+                        LedgerKey::Trustline(LedgerKeyTrustLine {
+                            asset: trustline.asset.clone(),
+                            account_id: trustline.account_id.clone(),
+                        })
+                    }
+                    _ => return false,
+                };
+                key.as_ref() == &entry_key
+            })
+        {
+            return Ok(Some((Rc::new(entry.clone()), lifetime.clone())));
         }
 
         self.inner_source.get(key)
