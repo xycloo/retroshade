@@ -181,7 +181,10 @@ impl RetroshadesExecution {
             Rc::new(internal_snapshot),
         );
 
-        println!("executed svm in recording mode");
+        println!(
+            "executed svm in recording mode {:?}",
+            svm_execution.as_ref().unwrap().retroshades
+        );
 
         match svm_execution {
             Ok(result) => Ok(RetroshadeExecutionResult {
