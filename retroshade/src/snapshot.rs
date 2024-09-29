@@ -31,12 +31,14 @@ impl SnapshotSource for InternalSnapshot {
         key: &Rc<soroban_env_host::xdr::LedgerKey>,
     ) -> Result<Option<soroban_env_host::storage::EntryWithLiveUntil>, soroban_env_host::HostError>
     {
+        println!("requesting entry {:?}", key);
         for (entry, _) in &self.target_pre_execution_state {
             let entry_key = match &entry.data {
                 LedgerEntryData::Account(account) => LedgerKey::Account(LedgerKeyAccount {
                     account_id: account.account_id.clone(),
                 }),
                 LedgerEntryData::ContractCode(code) => {
+                    println!("got code for pre_execution");
                     LedgerKey::ContractCode(LedgerKeyContractCode {
                         hash: code.hash.clone(),
                     })
