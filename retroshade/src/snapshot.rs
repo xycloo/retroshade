@@ -31,14 +31,12 @@ impl SnapshotSource for InternalSnapshot {
         key: &Rc<soroban_env_host::xdr::LedgerKey>,
     ) -> Result<Option<soroban_env_host::storage::EntryWithLiveUntil>, soroban_env_host::HostError>
     {
-        println!("requesting entry {:?}", key);
-        for (entry, _) in &self.target_pre_execution_state {
+        if let Some((entry, _)) = self.target_pre_execution_state.iter().find(|(entry, _)| {
             let entry_key = match &entry.data {
                 LedgerEntryData::Account(account) => LedgerKey::Account(LedgerKeyAccount {
                     account_id: account.account_id.clone(),
                 }),
                 LedgerEntryData::ContractCode(code) => {
-                    println!("got code for pre_execution");
                     LedgerKey::ContractCode(LedgerKeyContractCode {
                         hash: code.hash.clone(),
                     })
@@ -54,16 +52,11 @@ impl SnapshotSource for InternalSnapshot {
                     asset: trustline.asset.clone(),
                     account_id: trustline.account_id.clone(),
                 }),
-
-                // Some ledger key that will never be matched
-                _ => LedgerKey::ConfigSetting(LedgerKeyConfigSetting {
-                    config_setting_id: soroban_env_host::xdr::ConfigSettingId::StateArchival,
-                }),
+                _ => return false,
             };
-
-            if key.as_ref() == &entry_key {
-                return Ok(Some((Rc::new(entry.clone()), None)));
-            }
+            key.as_ref() == &entry_key
+        }) {
+            return Ok(Some((Rc::new(entry.clone()), None)));
         }
 
         self.inner_source.get(key)
