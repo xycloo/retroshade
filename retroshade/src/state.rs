@@ -162,6 +162,8 @@ impl RetroshadesExecution {
         // note: should only be one entry but we do this for consistency.
         let mut to_delete = Vec::new();
 
+        let len_here = self.target_pre_execution_state.len();
+
         for (idx, entry) in self.target_pre_execution_state.iter().enumerate() {
             match &entry.0.data {
                 LedgerEntryData::ContractCode(_) => {
@@ -178,9 +180,17 @@ impl RetroshadesExecution {
             }
         }
 
+        let mut shift = 0;
         for idx in to_delete {
-            self.target_pre_execution_state.remove(idx);
-            *changed = true
+            let target_idx_adjusted = idx - shift;
+
+            if self.target_pre_execution_state.len() > target_idx_adjusted {
+                self.target_pre_execution_state.remove(target_idx_adjusted);
+                *changed = true;
+                shift += 1;
+            } else {
+                log::error!("Unknown retorshades state error: Previous len before processing {}, idx: {}, current len: {}", len_here, idx, self.target_pre_execution_state.len())
+            }
         }
     }
 
