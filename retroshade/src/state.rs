@@ -63,11 +63,12 @@ impl RetroshadesExecution {
         for key in full_footprint {
             let entry = snapshot_source
                 .get(&Rc::new(key.clone()))
-                .map_err(|err| RetroshadeError::SVMHost(err))?
-                .ok_or(RetroshadeError::EntryNotFound(key))?;
+                .map_err(|err| RetroshadeError::SVMHost(err))?;
 
-            self.target_pre_execution_state
-                .push((entry.0.as_ref().clone(), entry.1))
+            if let Some(entry) = entry {
+                self.target_pre_execution_state
+                    .push((entry.0.as_ref().clone(), entry.1))
+            }
         }
 
         Ok(())
