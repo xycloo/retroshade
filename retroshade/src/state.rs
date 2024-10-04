@@ -1,4 +1,4 @@
-use std::{collections::HashMap, rc::Rc};
+use std::{collections::HashMap, rc::Rc, u32};
 
 use soroban_env_host::{
     storage::SnapshotSource,
@@ -152,11 +152,21 @@ impl RetroshadesExecution {
                 LedgerEntryChange::Created(entry) => {
                     self.remove_entry(entry, changed);
                 }
-                _ => {}
+                LedgerEntryChange::Removed(_) => {
+                    if let Some(pre_execution) = &current_state {
+                        self.add_entry(pre_execution);
+                    }
+                    current_state = None
+                }
             }
         }
 
         Ok(())
+    }
+
+    fn add_entry(&mut self, entry: &LedgerEntry) {
+        self.target_pre_execution_state
+            .push((entry.clone(), Some(u32::MAX)));
     }
 
     fn remove_entry(&mut self, current_state_entry: &LedgerEntry, changed: &mut bool) {
