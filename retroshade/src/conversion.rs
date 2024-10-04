@@ -257,6 +257,7 @@ impl ToSql for FromScVal {
                 | &Type::BOOL_ARRAY
                 | &Type::TEXT_ARRAY
                 | &Type::FLOAT8_ARRAY
+                | &Type::JSONB
         )
     }
 
