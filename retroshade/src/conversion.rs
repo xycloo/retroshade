@@ -150,12 +150,12 @@ impl FromScVal {
                 }
 
                 FromScVal {
-                    dbtype: Type::JSON,
+                    dbtype: Type::TEXT,
                     kind: TypeKind::Text(serde_json::to_string(&v).unwrap()),
                 }
             }
             ScVal::Map(m) => FromScVal {
-                dbtype: Type::JSON,
+                dbtype: Type::TEXT,
                 kind: TypeKind::Text(serde_json::to_string(&m).unwrap()),
             },
             ScVal::Error(e) => FromScVal {
