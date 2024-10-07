@@ -154,6 +154,9 @@ impl RetroshadesExecution {
                 }
                 LedgerEntryChange::Removed(_) => {
                     if let Some(pre_execution) = &current_state {
+                        // note: remove the entry before adding it in case the newest ledger state
+                        // also includes a newer entry.
+                        self.remove_entry(pre_execution, changed);
                         self.add_entry(pre_execution);
                     }
                     current_state = None
