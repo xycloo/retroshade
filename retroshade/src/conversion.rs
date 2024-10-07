@@ -136,10 +136,10 @@ impl FromScVal {
                                 TypeKind::Boolean(_) => Type::BOOL_ARRAY,
                                 TypeKind::Numeric(_) => Type::NUMERIC_ARRAY,
                                 TypeKind::Text(_) => Type::TEXT_ARRAY,
-                                _ => Type::JSON,
+                                _ => Type::TEXT,
                             };
 
-                            if dbtype != Type::JSON {
+                            if dbtype != Type::TEXT {
                                 return FromScVal {
                                     dbtype,
                                     kind: TypeKind::GenericArray(inner_array),
@@ -257,7 +257,6 @@ impl ToSql for FromScVal {
                 | &Type::BOOL_ARRAY
                 | &Type::TEXT_ARRAY
                 | &Type::FLOAT8_ARRAY
-                | &Type::JSONB
         )
     }
 

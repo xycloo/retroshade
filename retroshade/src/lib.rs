@@ -207,7 +207,6 @@ impl RetroshadesExecution {
         &self,
         retroshade_exec: RetroshadeExecutionResult,
     ) -> Result<RetroshadeExecutionResultPretty, RetroshadeError> {
-        println!("Checking successful contract call");
         if let Some(first) = retroshade_exec.diagnostic.get(0) {
             if !first.in_successful_contract_call {
                 println!(
