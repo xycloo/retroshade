@@ -49,6 +49,7 @@ pub enum RetroshadeError {
     MissingContext,
     MalformedXdr,
     MalformedRetroshadeEvent,
+    NonSuccessfulContractCall(Vec<DiagnosticEvent>),
 }
 
 #[derive(Clone, Debug)]
@@ -209,10 +210,9 @@ impl RetroshadesExecution {
     ) -> Result<RetroshadeExecutionResultPretty, RetroshadeError> {
         if let Some(first) = retroshade_exec.diagnostic.get(0) {
             if !first.in_successful_contract_call {
-                println!(
-                    "\nError while executing retroshades: \n{:?}",
-                    retroshade_exec.diagnostic
-                )
+                return Err(RetroshadeError::NonSuccessfulContractCall(
+                    retroshade_exec.diagnostic,
+                ));
             }
         }
 
