@@ -25,6 +25,9 @@ pub struct RetroshadesExecution {
     /// Pre-tx-execution state.
     target_pre_execution_state: Vec<(LedgerEntry, Option<u32>)>,
 
+    /// For recording mode only. Forces entries to be removed from the retro snapshot.
+    force_remove: Vec<LedgerEntry>,
+
     /// Transaction's host function.
     host_function: Option<HostFunction>,
 
@@ -118,6 +121,7 @@ impl RetroshadesExecution {
             resources: None,
             source_account: None,
             ledger_info,
+            force_remove: vec![],
         }
     }
 
@@ -165,8 +169,11 @@ impl RetroshadesExecution {
         &self,
         ledger_snapshot: Rc<dyn SnapshotSource>,
     ) -> Result<RetroshadeExecutionResult, RetroshadeError> {
-        let internal_snapshot =
-            InternalSnapshot::new(ledger_snapshot, self.target_pre_execution_state.clone());
+        let internal_snapshot = InternalSnapshot::new(
+            ledger_snapshot,
+            self.target_pre_execution_state.clone(),
+            self.force_remove.clone(),
+        );
 
         let svm_execution = execute_svm_in_recording_mode(
             true,
