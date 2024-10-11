@@ -173,6 +173,7 @@ impl RetroshadesExecution {
     }
 
     fn remove_entry(&mut self, current_state_entry: &LedgerEntry, changed: &mut bool) {
+        println!("Removing entry ");
         // note: should only be one entry but we do this for consistency.
         let mut to_delete = Vec::new();
 
@@ -194,12 +195,15 @@ impl RetroshadesExecution {
             }
         }
 
+        println!("To delete");
+
         let mut shift = 0;
         for idx in to_delete {
             let target_idx_adjusted = idx - shift;
 
             if self.target_pre_execution_state.len() > target_idx_adjusted {
                 self.target_pre_execution_state.remove(target_idx_adjusted);
+                println!("deleted {}", target_idx_adjusted);
                 *changed = true;
                 shift += 1;
             } else {
