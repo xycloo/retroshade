@@ -24,7 +24,8 @@ use soroban_env_host::{
         LedgerKey, LedgerKeyContractCode, LedgerKeyContractData, MuxedAccount, Operation,
         OperationBody, OperationMeta, ScAddress, ScContractInstance, ScMap, ScMapEntry, ScSymbol,
         ScVal, ScVec, SequenceNumber, SorobanResources, SorobanTransactionDataExt,
-        SorobanTransactionMeta, Transaction, TransactionMetaV3, TransactionV1Envelope, Uint256,
+        SorobanTransactionMeta, Transaction, TransactionMeta, TransactionMetaV3,
+        TransactionV1Envelope, Uint256,
     },
     LedgerInfo,
 };
@@ -249,7 +250,12 @@ fn simple() {
     };
 
     retroshades
-        .build_from_envelope_and_meta(Box::new(snapshot_source), t_envelope, meta, HashMap::new())
+        .build_from_envelope_and_meta(
+            Box::new(snapshot_source),
+            t_envelope,
+            TransactionMeta::V3(meta),
+            HashMap::new(),
+        )
         .unwrap();
 
     let retroshades_result = retroshades.retroshade().unwrap();

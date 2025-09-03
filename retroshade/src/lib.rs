@@ -8,7 +8,7 @@ use soroban_env_host::{
     storage::SnapshotSource,
     xdr::{
         AccountId, DiagnosticEvent, Hash, HostFunction, LedgerEntry, LedgerKey, ScVal,
-        SorobanAuthorizationEntry, SorobanResources, TransactionMetaV3, TransactionV1Envelope,
+        SorobanAuthorizationEntry, SorobanResources, TransactionMeta, TransactionV1Envelope,
     },
     zephyr::RetroshadeExport,
     HostError, LedgerInfo,
@@ -129,7 +129,7 @@ impl RetroshadesExecution {
         &mut self,
         snapshot_source: Box<dyn SnapshotSource>,
         tx_envelope: TransactionV1Envelope,
-        tx_meta: TransactionMetaV3,
+        tx_meta: TransactionMeta,
         mercury_contracts: HashMap<Hash, &[u8]>,
     ) -> Result<bool, RetroshadeError> {
         self.build_current_state(snapshot_source, tx_envelope)?;

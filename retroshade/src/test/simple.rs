@@ -9,8 +9,8 @@ use soroban_env_host::{
         LedgerEntryData, LedgerEntryExt, LedgerFootprint, LedgerKey, LedgerKeyContractCode,
         LedgerKeyContractData, MuxedAccount, Operation, OperationBody, OperationMeta, ScAddress,
         ScContractInstance, ScMap, ScSymbol, ScVal, ScVec, SequenceNumber, SorobanResources,
-        SorobanTransactionDataExt, SorobanTransactionMeta, Transaction, TransactionMetaV3,
-        TransactionV1Envelope, Uint256,
+        SorobanTransactionDataExt, SorobanTransactionMeta, Transaction, TransactionMeta,
+        TransactionMetaV3, TransactionV1Envelope, Uint256,
     },
     LedgerInfo,
 };
@@ -147,7 +147,12 @@ fn simple() {
     mercury_contracts.insert(Hash([0; 32]), binary.as_slice());
 
     let replaced = retroshades
-        .build_from_envelope_and_meta(Box::new(snapshot_source), envelope, meta, mercury_contracts)
+        .build_from_envelope_and_meta(
+            Box::new(snapshot_source),
+            envelope,
+            TransactionMeta::V3(meta),
+            mercury_contracts,
+        )
         .unwrap();
 
     assert!(replaced);

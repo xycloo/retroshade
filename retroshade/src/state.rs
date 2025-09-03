@@ -4,12 +4,17 @@ use soroban_env_host::{
     storage::SnapshotSource,
     xdr::{
         AccountId, ContractExecutable, Hash, LedgerEntry, LedgerEntryChange, LedgerEntryData,
-        MuxedAccount, Operation, OperationBody, OperationMeta, PublicKey, ScAddress, ScVal,
-        TransactionExt, TransactionMetaV3, TransactionV1Envelope,
+        MuxedAccount, Operation, OperationBody, OperationMeta, OperationMetaV2, PublicKey,
+        ScAddress, ScVal, TransactionExt, TransactionMeta, TransactionV1Envelope,
     },
 };
 
 use crate::{RetroshadeError, RetroshadesExecution};
+
+pub enum MetaOperation {
+    V1(OperationMeta),
+    V2(OperationMetaV2),
+}
 
 impl RetroshadesExecution {
     /// Builds the current state for the requested entries and
@@ -76,11 +81,29 @@ impl RetroshadesExecution {
 
     pub(crate) fn state_reset_to_pre_execution(
         &mut self,
-        tx_meta: TransactionMetaV3,
+        tx_meta: TransactionMeta,
     ) -> Result<bool, RetroshadeError> {
         let mut changed = false;
 
-        for op in &tx_meta.operations.to_vec() {
+        let ops: Vec<MetaOperation> = match tx_meta {
+            TransactionMeta::V3(v3) => v3
+                .operations
+                .to_vec()
+                .iter()
+                .map(|o| MetaOperation::V1(o.clone()))
+                .collect(),
+
+            TransactionMeta::V4(v4) => v4
+                .operations
+                .to_vec()
+                .iter()
+                .map(|o| MetaOperation::V2(o.clone()))
+                .collect(),
+
+            _ => return Err(RetroshadeError::NotSorobanTx),
+        };
+
+        for op in &ops {
             self.process_operation(op, &mut changed)?;
         }
 
@@ -132,12 +155,18 @@ impl RetroshadesExecution {
 
     fn process_operation(
         &mut self,
-        op: &OperationMeta,
+        op: &MetaOperation,
         changed: &mut bool,
     ) -> Result<(), RetroshadeError> {
         let mut current_state = None;
 
-        for change in &op.changes.0.to_vec() {
+        let changes = match op {
+            MetaOperation::V1(v1) => v1.changes.0.to_vec(),
+
+            MetaOperation::V2(v2) => v2.changes.0.to_vec(),
+        };
+
+        for change in &changes {
             match change {
                 LedgerEntryChange::State(state) => current_state = Some(state),
                 LedgerEntryChange::Updated(_) => {
