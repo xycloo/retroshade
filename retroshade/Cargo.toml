@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 bytes = "1.6.0"
-soroban-env-host = { path = "../retroshades-svm-fork/soroban-env-host", features = [
+soroban-env-host = { git = "https://github.com/xycloo/retroshades-svm-fork", features = [
     "testutils",
     "recording_mode",
 ] }
