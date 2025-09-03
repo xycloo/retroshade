@@ -31,7 +31,7 @@ impl RetroshadesExecution {
         if let Some(Operation {
             source_account,
             body,
-        }) = envelope.tx.operations.get(0)
+        }) = envelope.tx.operations.first()
         {
             if let OperationBody::InvokeHostFunction(host_fn) = body {
                 self.auth_entries = host_fn.auth.to_vec();
@@ -63,7 +63,7 @@ impl RetroshadesExecution {
         for key in full_footprint {
             let entry = snapshot_source
                 .get(&Rc::new(key.clone()))
-                .map_err(|err| RetroshadeError::SVMHost(err))?;
+                .map_err(RetroshadeError::SVMHost)?;
 
             if let Some(entry) = entry {
                 self.target_pre_execution_state
@@ -97,24 +97,21 @@ impl RetroshadesExecution {
             let mut binaries_mutation = HashMap::new();
 
             for entry in self.target_pre_execution_state.iter() {
-                match &entry.0.data {
-                    LedgerEntryData::ContractData(data) => {
-                        let contract_hash = match &data.contract {
-                            ScAddress::Contract(hash) => hash,
-                            _ => return Err(RetroshadeError::MalformedXdr),
-                        };
-                        if let Some(new_code) = mercury_contracts.get(&contract_hash) {
-                            if let ScVal::LedgerKeyContractInstance = data.key {
-                                if let ScVal::ContractInstance(instance) = &data.val {
-                                    if let ContractExecutable::Wasm(wasm) = &instance.executable {
-                                        binaries_mutation.insert(wasm.clone(), new_code);
-                                    }
-                                };
-                            }
+                if let LedgerEntryData::ContractData(data) = &entry.0.data {
+                    let contract_hash = match &data.contract {
+                        ScAddress::Contract(hash) => hash,
+                        _ => return Err(RetroshadeError::MalformedXdr),
+                    };
+                    let hash = contract_hash.clone().into();
+                    if let Some(new_code) = mercury_contracts.get(&hash) {
+                        if let ScVal::LedgerKeyContractInstance = data.key {
+                            if let ScVal::ContractInstance(instance) = &data.val {
+                                if let ContractExecutable::Wasm(wasm) = &instance.executable {
+                                    binaries_mutation.insert(wasm.clone(), new_code);
+                                }
+                            };
                         }
                     }
-
-                    _ => (),
                 }
             }
 
@@ -152,6 +149,7 @@ impl RetroshadesExecution {
                 LedgerEntryChange::Created(entry) => {
                     self.remove_entry(entry, changed);
                 }
+                LedgerEntryChange::Restored(_) => {}
                 LedgerEntryChange::Removed(_) => {
                     if let Some(pre_execution) = &current_state {
                         // note: remove the entry before adding it in case the newest ledger state

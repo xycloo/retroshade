@@ -9,7 +9,8 @@ use soroban_env_host::{
         LedgerEntryData, LedgerEntryExt, LedgerFootprint, LedgerKey, LedgerKeyContractCode,
         LedgerKeyContractData, MuxedAccount, Operation, OperationBody, OperationMeta, ScAddress,
         ScContractInstance, ScMap, ScSymbol, ScVal, ScVec, SequenceNumber, SorobanResources,
-        SorobanTransactionMeta, Transaction, TransactionMetaV3, TransactionV1Envelope, Uint256,
+        SorobanTransactionDataExt, SorobanTransactionMeta, Transaction, TransactionMetaV3,
+        TransactionV1Envelope, Uint256,
     },
     LedgerInfo,
 };
@@ -36,7 +37,7 @@ impl SnapshotSource for TestDynamicSnapshot {
             },
             LedgerKey::ContractData(_) => LedgerEntry { last_modified_ledger_seq: 0, data: LedgerEntryData::ContractData(ContractDataEntry {
                 ext: ExtensionPoint::V0,
-                contract: ScAddress::Contract(Hash([0;32])),
+                contract: ScAddress::Contract(Hash([0;32]).into()),
                 durability: soroban_env_host::xdr::ContractDataDurability::Persistent,
                 key: soroban_env_host::xdr::ScVal::LedgerKeyContractInstance,
                 val: ScVal::ContractInstance(ScContractInstance {
@@ -54,7 +55,7 @@ impl SnapshotSource for TestDynamicSnapshot {
 #[test]
 fn simple() {
     let mut retroshades = RetroshadesExecution::new(LedgerInfo {
-        protocol_version: 22,
+        protocol_version: 23,
         sequence_number: 1000,
         timestamp: 200,
         network_id: [0; 32],
@@ -76,7 +77,7 @@ fn simple() {
             memo: soroban_env_host::xdr::Memo::None,
             ext: soroban_env_host::xdr::TransactionExt::V1(
                 soroban_env_host::xdr::SorobanTransactionData {
-                    ext: ExtensionPoint::V0,
+                    ext: SorobanTransactionDataExt::V0,
                     resources: SorobanResources {
                         footprint: LedgerFootprint {
                             read_only: vec![
@@ -84,7 +85,7 @@ fn simple() {
                                     hash: Hash([0; 32]),
                                 }),
                                 LedgerKey::ContractData(LedgerKeyContractData {
-                                    contract: ScAddress::Contract(Hash([0; 32])),
+                                    contract: ScAddress::Contract(Hash([0; 32]).into()),
                                     key: ScVal::LedgerKeyContractInstance,
                                     durability:
                                         soroban_env_host::xdr::ContractDataDurability::Persistent,
@@ -95,7 +96,7 @@ fn simple() {
                             read_write: vec![].try_into().unwrap(),
                         },
                         instructions: 1000000,
-                        read_bytes: 10000,
+                        disk_read_bytes: 10000,
                         write_bytes: 0,
                     },
                     resource_fee: 10000000,
@@ -105,7 +106,7 @@ fn simple() {
                 source_account: None,
                 body: OperationBody::InvokeHostFunction(InvokeHostFunctionOp {
                     host_function: HostFunction::InvokeContract(InvokeContractArgs {
-                        contract_address: ScAddress::Contract(Hash([0; 32])),
+                        contract_address: ScAddress::Contract(Hash([0; 32]).into()),
                         function_name: ScSymbol("t".try_into().unwrap()),
                         args: vec![].try_into().unwrap(),
                     }),
@@ -149,7 +150,7 @@ fn simple() {
         .build_from_envelope_and_meta(Box::new(snapshot_source), envelope, meta, mercury_contracts)
         .unwrap();
 
-    assert_eq!(replaced, true);
+    assert!(replaced);
 
     let retroshades = retroshades.retroshade_packed().unwrap();
     println!("{:?}", &retroshades.retroshades);

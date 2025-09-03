@@ -3,8 +3,8 @@ use std::rc::Rc;
 use soroban_env_host::{
     storage::SnapshotSource,
     xdr::{
-        LedgerEntry, LedgerEntryData, LedgerKey, LedgerKeyAccount, LedgerKeyConfigSetting,
-        LedgerKeyContractCode, LedgerKeyContractData, LedgerKeyTrustLine,
+        LedgerEntry, LedgerEntryData, LedgerKey, LedgerKeyAccount, LedgerKeyContractCode,
+        LedgerKeyContractData, LedgerKeyTrustLine,
     },
 };
 
@@ -63,35 +63,42 @@ impl SnapshotSource for InternalSnapshot {
                 key.as_ref() == &entry_key
             })
         {
-            return Ok(Some((Rc::new(entry.clone()), lifetime.clone())));
+            return Ok(Some((Rc::new(entry.clone()), *lifetime)));
         }
 
-        if let Some(_) = self.force_remove.iter().find(|entry| {
-            let entry_key = match &entry.data {
-                LedgerEntryData::Account(account) => LedgerKey::Account(LedgerKeyAccount {
-                    account_id: account.account_id.clone(),
-                }),
-                LedgerEntryData::ContractCode(code) => {
-                    LedgerKey::ContractCode(LedgerKeyContractCode {
-                        hash: code.hash.clone(),
-                    })
-                }
-                LedgerEntryData::ContractData(data) => {
-                    LedgerKey::ContractData(LedgerKeyContractData {
-                        contract: data.contract.clone(),
-                        key: data.key.clone(),
-                        durability: data.durability,
-                    })
-                }
-                LedgerEntryData::Trustline(trustline) => LedgerKey::Trustline(LedgerKeyTrustLine {
-                    asset: trustline.asset.clone(),
-                    account_id: trustline.account_id.clone(),
-                }),
-                _ => return false,
-            };
+        if self
+            .force_remove
+            .iter()
+            .find(|entry| {
+                let entry_key = match &entry.data {
+                    LedgerEntryData::Account(account) => LedgerKey::Account(LedgerKeyAccount {
+                        account_id: account.account_id.clone(),
+                    }),
+                    LedgerEntryData::ContractCode(code) => {
+                        LedgerKey::ContractCode(LedgerKeyContractCode {
+                            hash: code.hash.clone(),
+                        })
+                    }
+                    LedgerEntryData::ContractData(data) => {
+                        LedgerKey::ContractData(LedgerKeyContractData {
+                            contract: data.contract.clone(),
+                            key: data.key.clone(),
+                            durability: data.durability,
+                        })
+                    }
+                    LedgerEntryData::Trustline(trustline) => {
+                        LedgerKey::Trustline(LedgerKeyTrustLine {
+                            asset: trustline.asset.clone(),
+                            account_id: trustline.account_id.clone(),
+                        })
+                    }
+                    _ => return false,
+                };
 
-            key.as_ref() == &entry_key
-        }) {
+                key.as_ref() == &entry_key
+            })
+            .is_some()
+        {
             return Ok(None);
         }
 

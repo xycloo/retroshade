@@ -5,20 +5,16 @@ use soroban_env_host::{
     budget::Budget,
     e2e_invoke::{
         invoke_host_function, invoke_host_function_in_recording_mode, ledger_entry_to_ledger_key,
-        LedgerEntryChange, LedgerEntryLiveUntilChange,
+        LedgerEntryChange, LedgerEntryLiveUntilChange, RecordingInvocationAuthMode,
     },
     storage::SnapshotSource,
     xdr::{
-        AccountId, ContractDataDurability, ContractDataEntry, ContractEvent, ContractExecutable,
-        ContractIdPreimage, ContractIdPreimageFromAddress, CreateContractArgs, DiagnosticEvent,
-        ExtensionPoint, HashIdPreimage, HashIdPreimageSorobanAuthorization, HostFunction,
-        InvokeContractArgs, LedgerEntry, LedgerEntryData, LedgerFootprint, LedgerKey,
-        LedgerKeyContractCode, LedgerKeyContractData, Limits, ReadXdr, ScAddress, ScErrorCode,
-        ScErrorType, ScMap, ScVal, ScVec, SorobanAuthorizationEntry, SorobanCredentials,
-        SorobanResources, TtlEntry, Uint256, WriteXdr,
+        AccountId, ContractDataDurability, ContractEvent, DiagnosticEvent, HostFunction,
+        LedgerEntry, LedgerEntryData, LedgerKey, LedgerKeyContractCode, LedgerKeyContractData,
+        Limits, ReadXdr, ScVal, SorobanAuthorizationEntry, SorobanResources, TtlEntry, WriteXdr,
     },
     zephyr::RetroshadeExport,
-    Host, HostError, LedgerInfo,
+    HostError, LedgerInfo,
 };
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -35,7 +31,7 @@ impl From<LedgerEntryChange> for LedgerEntryChangeHelper {
         Self {
             read_only: c.read_only,
             key: LedgerKey::from_xdr(c.encoded_key, Limits::none()).unwrap(),
-            old_entry_size_bytes: c.old_entry_size_bytes,
+            old_entry_size_bytes: c.old_entry_size_bytes_for_rent,
             new_value: c
                 .encoded_new_value
                 .map(|v| LedgerEntry::from_xdr(v, Limits::none()).unwrap()),
@@ -47,6 +43,7 @@ impl From<LedgerEntryChange> for LedgerEntryChangeHelper {
 impl LedgerEntryChangeHelper {
     fn no_op_change(entry: &LedgerEntry, live_until_ledger: u32) -> Self {
         let ledger_key = ledger_entry_to_ledger_key(entry, &Budget::default()).unwrap();
+        let ledger_entry_type = ledger_key.discriminant();
         let durability = match &ledger_key {
             LedgerKey::ContractData(cd) => Some(cd.durability),
             LedgerKey::ContractCode(_) => Some(ContractDataDurability::Persistent),
@@ -57,16 +54,13 @@ impl LedgerEntryChangeHelper {
             key: ledger_key.clone(),
             old_entry_size_bytes: entry.to_xdr(Limits::none()).unwrap().len() as u32,
             new_value: None,
-            ttl_change: if let Some(durability) = durability {
-                Some(LedgerEntryLiveUntilChange {
-                    key_hash: compute_key_hash(&ledger_key),
-                    durability,
-                    old_live_until_ledger: live_until_ledger,
-                    new_live_until_ledger: live_until_ledger,
-                })
-            } else {
-                None
-            },
+            ttl_change: durability.map(|durability| LedgerEntryLiveUntilChange {
+                entry_type: ledger_entry_type,
+                key_hash: compute_key_hash(&ledger_key),
+                durability,
+                old_live_until_ledger: live_until_ledger,
+                new_live_until_ledger: live_until_ledger,
+            }),
         }
     }
 }
@@ -116,7 +110,7 @@ pub fn execute_svm_in_recording_mode(
         enable_diagnostics,
         host_fn,
         source_account,
-        None,
+        RecordingInvocationAuthMode::Recording(true),
         ledger_info,
         ledger_snapshot,
         prng_seed,
@@ -191,6 +185,7 @@ pub fn execute_svm(
         enable_diagnostics,
         encoded_host_fn,
         encoded_resources,
+        &[],
         encoded_source_account,
         encoded_auth_entries.into_iter(),
         ledger_info.clone(),
@@ -198,6 +193,8 @@ pub fn execute_svm(
         encoded_ttl_entries.into_iter(),
         prng_seed.to_vec(),
         &mut diagnostic_events,
+        None,
+        None,
     )?;
 
     Ok(InvokeHostFunctionHelperResult {
@@ -219,7 +216,7 @@ pub fn execute_svm(
 #[cfg(test)]
 mod test {
     use soroban_env_host::{
-        xdr::{AccountId, HostFunction, PublicKey, Uint256},
+        xdr::{AccountId, PublicKey, Uint256},
         LedgerInfo,
     };
 

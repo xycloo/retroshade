@@ -215,7 +215,7 @@ impl RetroshadesExecution {
         &self,
         retroshade_exec: RetroshadeExecutionResult,
     ) -> Result<RetroshadeExecutionResultPretty, RetroshadeError> {
-        if let Some(first) = retroshade_exec.diagnostic.get(0) {
+        if let Some(first) = retroshade_exec.diagnostic.first() {
             if !first.in_successful_contract_call {
                 return Err(RetroshadeError::NonSuccessfulContractCall(
                     retroshade_exec.diagnostic,

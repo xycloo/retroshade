@@ -23,8 +23,8 @@ use soroban_env_host::{
         LedgerEntryChange, LedgerEntryChanges, LedgerEntryData, LedgerEntryExt, LedgerFootprint,
         LedgerKey, LedgerKeyContractCode, LedgerKeyContractData, MuxedAccount, Operation,
         OperationBody, OperationMeta, ScAddress, ScContractInstance, ScMap, ScMapEntry, ScSymbol,
-        ScVal, ScVec, SequenceNumber, SorobanResources, SorobanTransactionMeta, Transaction,
-        TransactionMetaV3, TransactionV1Envelope, Uint256,
+        ScVal, ScVec, SequenceNumber, SorobanResources, SorobanTransactionDataExt,
+        SorobanTransactionMeta, Transaction, TransactionMetaV3, TransactionV1Envelope, Uint256,
     },
     LedgerInfo,
 };
@@ -51,7 +51,7 @@ impl SnapshotSource for TestDynamicSnapshot {
             },
             LedgerKey::ContractData(_) => LedgerEntry { last_modified_ledger_seq: 0, data: LedgerEntryData::ContractData(ContractDataEntry {
                 ext: ExtensionPoint::V0,
-                contract: ScAddress::Contract(Hash([0;32])),
+                contract: ScAddress::Contract(Hash([0;32]).into()),
                 durability: soroban_env_host::xdr::ContractDataDurability::Persistent,
                 key: soroban_env_host::xdr::ScVal::LedgerKeyContractInstance,
                 val: ScVal::ContractInstance(ScContractInstance {
@@ -94,7 +94,7 @@ fn simple() {
             memo: soroban_env_host::xdr::Memo::None,
             ext: soroban_env_host::xdr::TransactionExt::V1(
                 soroban_env_host::xdr::SorobanTransactionData {
-                    ext: ExtensionPoint::V0,
+                    ext: SorobanTransactionDataExt::V0,
                     resources: SorobanResources {
                         footprint: LedgerFootprint {
                             read_only: vec![LedgerKey::ContractCode(LedgerKeyContractCode {
@@ -103,7 +103,7 @@ fn simple() {
                             .try_into()
                             .unwrap(),
                             read_write: vec![LedgerKey::ContractData(LedgerKeyContractData {
-                                contract: ScAddress::Contract(Hash([0; 32])),
+                                contract: ScAddress::Contract(Hash([0; 32]).into()),
                                 key: ScVal::LedgerKeyContractInstance,
                                 durability:
                                     soroban_env_host::xdr::ContractDataDurability::Persistent,
@@ -112,7 +112,7 @@ fn simple() {
                             .unwrap(),
                         },
                         instructions: 10000000,
-                        read_bytes: 1000000,
+                        disk_read_bytes: 1000000,
                         write_bytes: 100000,
                     },
                     resource_fee: 10000000,
@@ -122,7 +122,7 @@ fn simple() {
                 source_account: None,
                 body: OperationBody::InvokeHostFunction(InvokeHostFunctionOp {
                     host_function: HostFunction::InvokeContract(InvokeContractArgs {
-                        contract_address: ScAddress::Contract(Hash([0; 32])),
+                        contract_address: ScAddress::Contract(Hash([0; 32]).into()),
                         function_name: ScSymbol("put".try_into().unwrap()),
                         args: vec![].try_into().unwrap(),
                     }),
@@ -144,7 +144,7 @@ fn simple() {
             memo: soroban_env_host::xdr::Memo::None,
             ext: soroban_env_host::xdr::TransactionExt::V1(
                 soroban_env_host::xdr::SorobanTransactionData {
-                    ext: ExtensionPoint::V0,
+                    ext: SorobanTransactionDataExt::V0,
                     resources: SorobanResources {
                         footprint: LedgerFootprint {
                             read_only: vec![LedgerKey::ContractCode(LedgerKeyContractCode {
@@ -153,7 +153,7 @@ fn simple() {
                             .try_into()
                             .unwrap(),
                             read_write: vec![LedgerKey::ContractData(LedgerKeyContractData {
-                                contract: ScAddress::Contract(Hash([0; 32])),
+                                contract: ScAddress::Contract(Hash([0; 32]).into()),
                                 key: ScVal::LedgerKeyContractInstance,
                                 durability:
                                     soroban_env_host::xdr::ContractDataDurability::Persistent,
@@ -162,7 +162,7 @@ fn simple() {
                             .unwrap(),
                         },
                         instructions: 10000000,
-                        read_bytes: 1000000,
+                        disk_read_bytes: 1000000,
                         write_bytes: 100000,
                     },
                     resource_fee: 10000000,
@@ -172,7 +172,7 @@ fn simple() {
                 source_account: None,
                 body: OperationBody::InvokeHostFunction(InvokeHostFunctionOp {
                     host_function: HostFunction::InvokeContract(InvokeContractArgs {
-                        contract_address: ScAddress::Contract(Hash([0; 32])),
+                        contract_address: ScAddress::Contract(Hash([0; 32]).into()),
                         function_name: ScSymbol("t".try_into().unwrap()),
                         args: vec![].try_into().unwrap(),
                     }),
@@ -201,7 +201,7 @@ fn simple() {
                         last_modified_ledger_seq: 0,
                         data: LedgerEntryData::ContractData(ContractDataEntry {
                             ext: ExtensionPoint::V0,
-                            contract: ScAddress::Contract(Hash([0; 32])),
+                            contract: ScAddress::Contract(Hash([0; 32]).into()),
                             durability: soroban_env_host::xdr::ContractDataDurability::Persistent,
                             key: soroban_env_host::xdr::ScVal::LedgerKeyContractInstance,
                             val: ScVal::ContractInstance(ScContractInstance {
@@ -222,7 +222,7 @@ fn simple() {
                         last_modified_ledger_seq: 0,
                         data: LedgerEntryData::ContractData(ContractDataEntry {
                             ext: ExtensionPoint::V0,
-                            contract: ScAddress::Contract(Hash([0; 32])),
+                            contract: ScAddress::Contract(Hash([0; 32]).into()),
                             durability: soroban_env_host::xdr::ContractDataDurability::Persistent,
                             key: soroban_env_host::xdr::ScVal::LedgerKeyContractInstance,
                             val: ScVal::ContractInstance(ScContractInstance {

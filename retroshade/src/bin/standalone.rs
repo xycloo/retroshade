@@ -11,8 +11,9 @@ use soroban_env_host::{
         LedgerEntryChanges, LedgerEntryData, LedgerEntryExt, LedgerFootprint, LedgerKey,
         LedgerKeyContractCode, LedgerKeyContractData, Limits, MuxedAccount, Operation,
         OperationBody, OperationMeta, PublicKey, ReadXdr, ScAddress, ScContractInstance, ScMap,
-        ScSymbol, ScVal, ScVec, SequenceNumber, SorobanResources, SorobanTransactionMeta,
-        Thresholds, Transaction, TransactionMetaV3, TransactionV1Envelope, Uint256, WriteXdr,
+        ScSymbol, ScVal, ScVec, SequenceNumber, SorobanResources, SorobanTransactionDataExt,
+        SorobanTransactionMeta, Thresholds, Transaction, TransactionMetaV3, TransactionV1Envelope,
+        Uint256, WriteXdr,
     },
     LedgerInfo,
 };
@@ -20,7 +21,8 @@ use soroban_env_host::{
 pub fn get_current_ledger_sequence() -> (i32, i64) {
     let conn = Connection::open("/tmp/rs_ingestion_temp/stellar.db").unwrap();
     let query_string =
-        format!("SELECT ledgerseq, closetime FROM ledgerheaders ORDER BY ledgerseq DESC LIMIT 1");
+        "SELECT ledgerseq, closetime FROM ledgerheaders ORDER BY ledgerseq DESC LIMIT 1"
+            .to_string();
 
     let mut stmt = conn.prepare(&query_string).unwrap();
     let mut entries = stmt.query(params![]).unwrap();
@@ -47,7 +49,7 @@ pub fn get_ttl(key: LedgerKey) -> u32 {
     };
 
     let conn = Connection::open("/tmp/rs_ingestion_temp/stellar.db").unwrap();
-    let query_string = format!("SELECT ledgerentry FROM ttl WHERE keyhash = ?1");
+    let query_string = "SELECT ledgerentry FROM ttl WHERE keyhash = ?1".to_string();
 
     let mut stmt = conn.prepare(&query_string).unwrap();
     let mut entries = stmt.query(params![result]).unwrap();
@@ -85,9 +87,9 @@ impl SnapshotSource for DynamicSnapshot {
                 let asset_xdr = trustline.asset.to_xdr_base64(Limits::none()).unwrap();
 
                 let conn = Connection::open("/tmp/rs_ingestion_temp/stellar.db").unwrap();
-                let query_string = format!(
+                let query_string =
                     "SELECT ledgerentry FROM trustlines where accountid = ?1 AND asset = ?2"
-                );
+                        .to_string();
 
                 let mut stmt = conn.prepare(&query_string).unwrap();
                 let mut entries = stmt.query(params![account_id, asset_xdr]).unwrap();
@@ -110,7 +112,7 @@ impl SnapshotSource for DynamicSnapshot {
                 let id = stellar_strkey::ed25519::PublicKey(ed25519.0).to_string();
 
                 let conn = Connection::open("/tmp/rs_ingestion_temp/stellar.db").unwrap();
-                let query_string = format!("SELECT balance FROM accounts where accountid = ?1");
+                let query_string = "SELECT balance FROM accounts where accountid = ?1".to_string();
 
                 let mut stmt = conn.prepare(&query_string).unwrap();
                 let mut entries = stmt.query(params![id]).unwrap();
@@ -145,7 +147,8 @@ impl SnapshotSource for DynamicSnapshot {
             LedgerKey::ContractCode(key) => {
                 let hash = key.hash.clone();
                 let conn = Connection::open("/tmp/rs_ingestion_temp/stellar.db").unwrap();
-                let query_string = format!("SELECT ledgerentry FROM contractcode where hash = ?1");
+                let query_string =
+                    "SELECT ledgerentry FROM contractcode where hash = ?1".to_string();
 
                 let mut stmt = conn.prepare(&query_string).unwrap();
                 let mut entries = stmt
@@ -173,9 +176,9 @@ impl SnapshotSource for DynamicSnapshot {
                 let scval = key.key.clone();
 
                 let conn = Connection::open("/tmp/rs_ingestion_temp/stellar.db").unwrap();
-                let query_string = format!(
+                let query_string =
                     "SELECT ledgerentry FROM contractdata where contractid = ?1 AND key = ?2"
-                );
+                        .to_string();
 
                 let mut stmt = conn.prepare(&query_string).unwrap();
                 let mut entries = stmt
@@ -227,7 +230,7 @@ impl SnapshotSource for TestDynamicSnapshot {
             },
             LedgerKey::ContractData(_) => LedgerEntry { last_modified_ledger_seq: 0, data: LedgerEntryData::ContractData(ContractDataEntry {
                 ext: ExtensionPoint::V0,
-                contract: ScAddress::Contract(Hash([0;32])),
+                contract: ScAddress::Contract(Hash([0;32]).into()),
                 durability: soroban_env_host::xdr::ContractDataDurability::Persistent,
                 key: soroban_env_host::xdr::ScVal::LedgerKeyContractInstance,
                 val: ScVal::ContractInstance(ScContractInstance {
@@ -266,7 +269,7 @@ fn main() {
             memo: soroban_env_host::xdr::Memo::None,
             ext: soroban_env_host::xdr::TransactionExt::V1(
                 soroban_env_host::xdr::SorobanTransactionData {
-                    ext: ExtensionPoint::V0,
+                    ext: SorobanTransactionDataExt::V0,
                     resources: SorobanResources {
                         footprint: LedgerFootprint {
                             read_only: vec![
@@ -274,7 +277,7 @@ fn main() {
                                     hash: Hash([0; 32]),
                                 }),
                                 LedgerKey::ContractData(LedgerKeyContractData {
-                                    contract: ScAddress::Contract(Hash([0; 32])),
+                                    contract: ScAddress::Contract(Hash([0; 32]).into()),
                                     key: ScVal::LedgerKeyContractInstance,
                                     durability:
                                         soroban_env_host::xdr::ContractDataDurability::Persistent,
@@ -285,7 +288,7 @@ fn main() {
                             read_write: vec![].try_into().unwrap(),
                         },
                         instructions: 1000000,
-                        read_bytes: 10000,
+                        disk_read_bytes: 10000,
                         write_bytes: 0,
                     },
                     resource_fee: 10000000,
@@ -295,7 +298,7 @@ fn main() {
                 source_account: None,
                 body: OperationBody::InvokeHostFunction(InvokeHostFunctionOp {
                     host_function: HostFunction::InvokeContract(InvokeContractArgs {
-                        contract_address: ScAddress::Contract(Hash([0; 32])),
+                        contract_address: ScAddress::Contract(Hash([0; 32]).into()),
                         function_name: ScSymbol("t".try_into().unwrap()),
                         args: vec![].try_into().unwrap(),
                     }),
