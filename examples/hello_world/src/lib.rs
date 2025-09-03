@@ -4,6 +4,7 @@ use soroban_sdk::{
     Vec,
 };
 
+#[cfg(feature="retroshade")]
 #[link(wasm_import_module = "x")]
 extern "C" {
     #[allow(improper_ctypes)]
@@ -34,6 +35,7 @@ impl HelloContract {
         let event: Val = event.into_val(&env);
         let event = event.get_payload() as i64;
 
+        #[cfg(feature="retroshade")]
         unsafe { zephyr_emit(target, event) };
     }
 }
