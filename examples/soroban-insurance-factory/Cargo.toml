@@ -13,11 +13,11 @@ default = ["mercury"]
 mercury = ["dep:retroshade-sdk"]
 
 [dependencies]
-soroban-sdk = { version = "21.4.0" }
+soroban-sdk = { version = "25.3.0" }
 retroshade-sdk = { version = "0.1.0", optional = true }
 
 [dev-dependencies]
-soroban-sdk = { version = "21.4.0", features = ["testutils"] }
+soroban-sdk = { version = "25.3.0", features = ["testutils"] }
 
 [profile.release]
 opt-level = "z"

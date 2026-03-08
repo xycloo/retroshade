@@ -73,7 +73,7 @@ impl SnapshotSource for TestDynamicSnapshot {
 #[test]
 fn simple() {
     let mut retroshades = RetroshadesExecution::new(LedgerInfo {
-        protocol_version: 22,
+        protocol_version: 25,
         sequence_number: 1000,
         timestamp: 200,
         network_id: [0; 32],
@@ -263,7 +263,7 @@ fn simple() {
     // println!("{:?}", retroshades_result.diagnostic);
 
     assert_eq!(
-        "[{\"contract_id\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"target\":{\"symbol\":\"test\"},\"event_object\":{\"map\":[{\"key\":{\"symbol\":\"amount\"},\"val\":{\"i128\":{\"hi\":0,\"lo\":2}}},{\"key\":{\"symbol\":\"test\"},\"val\":{\"address\":\"CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4\"}}]}}]",
+        "[{\"contract_id\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"target\":{\"symbol\":\"test\"},\"event_object\":{\"map\":[{\"key\":{\"symbol\":\"amount\"},\"val\":{\"i128\":\"2\"}},{\"key\":{\"symbol\":\"test\"},\"val\":{\"address\":\"CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABSC4\"}}]}}]",
         serde_json::to_string(&retroshades_result.retroshades).unwrap()
     );
 

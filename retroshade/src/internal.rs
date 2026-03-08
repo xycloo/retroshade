@@ -225,7 +225,7 @@ mod test {
     #[test]
     fn execute_mainnet() {
         let mut ledger_info = LedgerInfo::default();
-        ledger_info.protocol_version = 22;
+        ledger_info.protocol_version = 25;
 
         let execution = execute_svm(
             true,
@@ -233,7 +233,7 @@ mod test {
                 r#"{"invoke_contract":{"contract_address":"CB6WUNOICTMDMEBS7E7AGC3MEN43UA53QT4OT355F22VWMLOUJWWKMHH","function_name":"t","args":[]}}"#,
             ).unwrap(),
             &serde_json::from_str(
-                r#"{"footprint":{"read_only":[{"contract_data":{"contract":"CB6WUNOICTMDMEBS7E7AGC3MEN43UA53QT4OT355F22VWMLOUJWWKMHH","key":"ledger_key_contract_instance","durability":"persistent"}},{"contract_code":{"hash":"5bf30f4ebf6e399a0f6cf8c7d134f2e6741ab78455aa6bcb20e3dc01261ea5e3"}}],"read_write":[]},"instructions":492586,"read_bytes":864,"write_bytes":80000}"#,
+                r#"{"footprint":{"read_only":[{"contract_data":{"contract":"CB6WUNOICTMDMEBS7E7AGC3MEN43UA53QT4OT355F22VWMLOUJWWKMHH","key":"ledger_key_contract_instance","durability":"persistent"}},{"contract_code":{"hash":"5bf30f4ebf6e399a0f6cf8c7d134f2e6741ab78455aa6bcb20e3dc01261ea5e3"}}],"read_write":[]},"instructions":492586,"read_bytes":864,"write_bytes":80000,"disk_read_bytes":864}"#,
             ).unwrap(),
             &AccountId(PublicKey::PublicKeyTypeEd25519(Uint256([0;32]))),
             vec![],
