@@ -1244,7 +1244,7 @@ checksum = "3c5e1a9a646d36c3599cd173a41282daf47c44583ad367b8e6837255952e5c67"
 [[package]]
 name = "soroban-builtin-sdk-macros"
 version = "25.0.1"
-source = "git+https://github.com/xycloo/retroshades-svm-fork?branch=p25-upgrade#eb2fc40d26c6a70a136ab0f32ebf8ca000bfaaf7"
+source = "git+https://github.com/xycloo/retroshades-svm-fork#4db6efa9cf5aeda7000e9f62d6807761e83fceff"
 dependencies = [
  "itertools",
  "proc-macro2",
@@ -1255,7 +1255,7 @@ dependencies = [
 [[package]]
 name = "soroban-env-common"
 version = "25.0.1"
-source = "git+https://github.com/xycloo/retroshades-svm-fork?branch=p25-upgrade#eb2fc40d26c6a70a136ab0f32ebf8ca000bfaaf7"
+source = "git+https://github.com/xycloo/retroshades-svm-fork#4db6efa9cf5aeda7000e9f62d6807761e83fceff"
 dependencies = [
  "arbitrary",
  "crate-git-revision",
@@ -1272,7 +1272,7 @@ dependencies = [
 [[package]]
 name = "soroban-env-host"
 version = "25.0.1"
-source = "git+https://github.com/xycloo/retroshades-svm-fork?branch=p25-upgrade#eb2fc40d26c6a70a136ab0f32ebf8ca000bfaaf7"
+source = "git+https://github.com/xycloo/retroshades-svm-fork#4db6efa9cf5aeda7000e9f62d6807761e83fceff"
 dependencies = [
  "ark-bls12-381",
  "ark-bn254",
@@ -1309,7 +1309,7 @@ dependencies = [
 [[package]]
 name = "soroban-env-macros"
 version = "25.0.1"
-source = "git+https://github.com/xycloo/retroshades-svm-fork?branch=p25-upgrade#eb2fc40d26c6a70a136ab0f32ebf8ca000bfaaf7"
+source = "git+https://github.com/xycloo/retroshades-svm-fork#4db6efa9cf5aeda7000e9f62d6807761e83fceff"
 dependencies = [
  "itertools",
  "proc-macro2",
