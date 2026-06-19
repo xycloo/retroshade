@@ -6,6 +6,7 @@ use soroban_env_host::{
     e2e_invoke::{
         invoke_host_function, invoke_host_function_in_recording_mode, ledger_entry_to_ledger_key,
         LedgerEntryChange, LedgerEntryLiveUntilChange, RecordingInvocationAuthMode,
+        RecordingInvocationAuthParams,
     },
     storage::SnapshotSource,
     xdr::{
@@ -110,7 +111,9 @@ pub fn execute_svm_in_recording_mode(
         enable_diagnostics,
         host_fn,
         source_account,
-        RecordingInvocationAuthMode::Recording(true),
+        // NB: disable_non_root_auth=true preserves the prior Recording(true) semantics;
+        // use_address_v2=true for protocol 27 (affects only synthesized recorded creds).
+        RecordingInvocationAuthMode::Recording(RecordingInvocationAuthParams::new(true, true)),
         ledger_info,
         ledger_snapshot,
         prng_seed,
