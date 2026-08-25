@@ -59,6 +59,7 @@ pub enum RetroshadeError {
 pub struct RetroshadeExecutionResult {
     pub retroshades: Vec<RetroshadeExport>,
     pub diagnostic: Vec<DiagnosticEvent>,
+    pub invoke_success: bool,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -158,6 +159,7 @@ impl RetroshadesExecution {
 
         match svm_execution {
             Ok(result) => Ok(RetroshadeExecutionResult {
+                invoke_success: result.invoke_result.is_ok(),
                 retroshades: result.retroshades,
                 diagnostic: result.diagnostic_events,
             }),
@@ -190,6 +192,7 @@ impl RetroshadesExecution {
 
         match svm_execution {
             Ok(result) => Ok(RetroshadeExecutionResult {
+                invoke_success: result.invoke_result.is_ok(),
                 retroshades: result.retroshades,
                 diagnostic: result.diagnostic_events,
             }),
@@ -215,6 +218,12 @@ impl RetroshadesExecution {
         &self,
         retroshade_exec: RetroshadeExecutionResult,
     ) -> Result<RetroshadeExecutionResultPretty, RetroshadeError> {
+        if !retroshade_exec.invoke_success {
+            return Err(RetroshadeError::NonSuccessfulContractCall(
+                retroshade_exec.diagnostic,
+            ));
+        }
+
         if let Some(first) = retroshade_exec.diagnostic.first() {
             if !first.in_successful_contract_call {
                 return Err(RetroshadeError::NonSuccessfulContractCall(

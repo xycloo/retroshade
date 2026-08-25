@@ -1283,8 +1283,8 @@ checksum = "3c5e1a9a646d36c3599cd173a41282daf47c44583ad367b8e6837255952e5c67"
 
 [[package]]
 name = "soroban-builtin-sdk-macros"
-version = "26.1.3"
-source = "git+https://github.com/xycloo/retroshades-svm-fork?branch=p26-upgrade#6d891caf51e742070070ed8e250c2d4edf5aaa5f"
+version = "27.0.0"
+source = "git+https://github.com/xycloo/retroshades-svm-fork?branch=MER-060#4b7bc821ffab1e30e35fb0cfae661e50bca70e38"
 dependencies = [
  "itertools",
  "proc-macro2",
@@ -1294,8 +1294,8 @@ dependencies = [
 
 [[package]]
 name = "soroban-env-common"
-version = "26.1.3"
-source = "git+https://github.com/xycloo/retroshades-svm-fork?branch=p26-upgrade#6d891caf51e742070070ed8e250c2d4edf5aaa5f"
+version = "27.0.0"
+source = "git+https://github.com/xycloo/retroshades-svm-fork?branch=MER-060#4b7bc821ffab1e30e35fb0cfae661e50bca70e38"
 dependencies = [
  "arbitrary",
  "crate-git-revision",
@@ -1312,8 +1312,8 @@ dependencies = [
 
 [[package]]
 name = "soroban-env-host"
-version = "26.1.3"
-source = "git+https://github.com/xycloo/retroshades-svm-fork?branch=p26-upgrade#6d891caf51e742070070ed8e250c2d4edf5aaa5f"
+version = "27.0.0"
+source = "git+https://github.com/xycloo/retroshades-svm-fork?branch=MER-060#4b7bc821ffab1e30e35fb0cfae661e50bca70e38"
 dependencies = [
  "ark-bls12-381",
  "ark-bn254",
@@ -1349,8 +1349,8 @@ dependencies = [
 
 [[package]]
 name = "soroban-env-macros"
-version = "26.1.3"
-source = "git+https://github.com/xycloo/retroshades-svm-fork?branch=p26-upgrade#6d891caf51e742070070ed8e250c2d4edf5aaa5f"
+version = "27.0.0"
+source = "git+https://github.com/xycloo/retroshades-svm-fork?branch=MER-060#4b7bc821ffab1e30e35fb0cfae661e50bca70e38"
 dependencies = [
  "itertools",
  "proc-macro2",
@@ -1418,9 +1418,9 @@ dependencies = [
 
 [[package]]
 name = "stellar-xdr"
-version = "26.0.1"
+version = "27.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ea6e29c7e1f071c2767916460d006668197843d5d93f0ec8893a26f72a14f595"
+checksum = "05ff843326969bdf1ef673dcdba94c08f4a3c8f1e58d6e6ef39b1bd4f749179a"
 dependencies = [
  "arbitrary",
  "base64",
