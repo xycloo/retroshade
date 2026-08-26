@@ -4,15 +4,15 @@ use sha2::{Digest, Sha256};
 use soroban_env_host::{
     budget::Budget,
     e2e_invoke::{
-        invoke_host_function, invoke_host_function_in_recording_mode, ledger_entry_to_ledger_key,
-        LedgerEntryChange, LedgerEntryLiveUntilChange, RecordingInvocationAuthMode,
-        RecordingInvocationAuthParams,
+        entry_size_for_rent, invoke_host_function, invoke_host_function_in_recording_mode,
+        ledger_entry_to_ledger_key, LedgerEntryChange, LedgerEntryLiveUntilChange,
+        RecordingInvocationAuthMode, RecordingInvocationAuthParams, TtlLedgerEntryMeta,
     },
     storage::SnapshotSource,
     xdr::{
         AccountId, ContractDataDurability, ContractEvent, DiagnosticEvent, HostFunction,
-        LedgerEntry, LedgerEntryData, LedgerKey, LedgerKeyContractCode, LedgerKeyContractData,
-        Limits, ReadXdr, ScVal, SorobanAuthorizationEntry, SorobanResources, TtlEntry, WriteXdr,
+        LedgerEntry, LedgerKey, Limits, ReadXdr, ScVal, SorobanAuthorizationEntry,
+        SorobanResources, TtlEntry, WriteXdr,
     },
     zephyr::RetroshadeExport,
     HostError, LedgerInfo,
@@ -148,34 +148,34 @@ pub fn execute_svm(
         .iter()
         .map(|e| e.to_xdr(limits.clone()).unwrap())
         .collect();
-    let encoded_ledger_entries: Vec<Vec<u8>> = ledger_entries_with_ttl
+    // NB: p28 invoke_host_function takes footprint-ordered (entry, ttl meta) pairs
+    let mut entry_by_key: std::collections::HashMap<LedgerKey, (Vec<u8>, Option<TtlLedgerEntryMeta>)> =
+        std::collections::HashMap::new();
+    for (le, ttl) in ledger_entries_with_ttl.iter() {
+        let key = ledger_entry_to_ledger_key(le, &Budget::default())?;
+        let encoded = le.to_xdr(limits.clone()).unwrap();
+        let ttl = ttl
+            .map(|live_until_ledger| {
+                Ok::<TtlLedgerEntryMeta, HostError>(TtlLedgerEntryMeta {
+                    live_until_ledger,
+                    entry_size_for_rent: entry_size_for_rent(
+                        &Budget::default(),
+                        le,
+                        encoded.len() as u32,
+                    )?,
+                })
+            })
+            .transpose()?;
+        entry_by_key.insert(key, (encoded, ttl));
+    }
+    let encoded_ledger_entries: Vec<(Option<Vec<u8>>, Option<TtlLedgerEntryMeta>)> = resources
+        .footprint
+        .read_only
         .iter()
-        .map(|e| e.0.to_xdr(limits.clone()).unwrap())
-        .collect();
-    let encoded_ttl_entries: Vec<Vec<u8>> = ledger_entries_with_ttl
-        .iter()
-        .map(|e| {
-            let (le, ttl) = e;
-            let key = match &le.data {
-                LedgerEntryData::ContractData(cd) => {
-                    LedgerKey::ContractData(LedgerKeyContractData {
-                        contract: cd.contract.clone(),
-                        key: cd.key.clone(),
-                        durability: cd.durability,
-                    })
-                }
-                LedgerEntryData::ContractCode(code) => {
-                    LedgerKey::ContractCode(LedgerKeyContractCode {
-                        hash: code.hash.clone(),
-                    })
-                }
-                _ => {
-                    return vec![];
-                }
-            };
-            ttl_entry(&key, ttl.unwrap())
-                .to_xdr(limits.clone())
-                .unwrap()
+        .chain(resources.footprint.read_write.iter())
+        .map(|k| match entry_by_key.get(k) {
+            Some((bytes, ttl)) => (Some(bytes.clone()), *ttl),
+            None => (None, None),
         })
         .collect();
     let budget = Budget::default();
@@ -193,7 +193,6 @@ pub fn execute_svm(
         encoded_auth_entries.into_iter(),
         ledger_info.clone(),
         encoded_ledger_entries.into_iter(),
-        encoded_ttl_entries.into_iter(),
         prng_seed.to_vec(),
         &mut diagnostic_events,
         None,
