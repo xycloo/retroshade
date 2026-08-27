@@ -321,6 +321,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "crate-git-revision"
+version = "0.0.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "54851b5b3f24621804b1cded2820975623c205e3055d2d44031cdb1237339ac8"
+dependencies = [
+ "serde",
+ "serde_derive",
+ "serde_json",
+]
+
+[[package]]
 name = "crypto-bigint"
 version = "0.5.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1283,8 +1294,8 @@ checksum = "3c5e1a9a646d36c3599cd173a41282daf47c44583ad367b8e6837255952e5c67"
 
 [[package]]
 name = "soroban-builtin-sdk-macros"
-version = "27.0.0"
-source = "git+https://github.com/xycloo/retroshades-svm-fork?branch=MER-060#4b7bc821ffab1e30e35fb0cfae661e50bca70e38"
+version = "28.0.2"
+source = "git+https://github.com/xycloo/retroshades-svm-fork?branch=p28-upgrade#1ff2badb2b3c7c0d6e5d03898e23d84b767e4484"
 dependencies = [
  "itertools",
  "proc-macro2",
@@ -1294,11 +1305,11 @@ dependencies = [
 
 [[package]]
 name = "soroban-env-common"
-version = "27.0.0"
-source = "git+https://github.com/xycloo/retroshades-svm-fork?branch=MER-060#4b7bc821ffab1e30e35fb0cfae661e50bca70e38"
+version = "28.0.2"
+source = "git+https://github.com/xycloo/retroshades-svm-fork?branch=p28-upgrade#1ff2badb2b3c7c0d6e5d03898e23d84b767e4484"
 dependencies = [
  "arbitrary",
- "crate-git-revision",
+ "crate-git-revision 0.0.9",
  "ethnum",
  "num-derive",
  "num-traits",
@@ -1312,8 +1323,8 @@ dependencies = [
 
 [[package]]
 name = "soroban-env-host"
-version = "27.0.0"
-source = "git+https://github.com/xycloo/retroshades-svm-fork?branch=MER-060#4b7bc821ffab1e30e35fb0cfae661e50bca70e38"
+version = "28.0.2"
+source = "git+https://github.com/xycloo/retroshades-svm-fork?branch=p28-upgrade#1ff2badb2b3c7c0d6e5d03898e23d84b767e4484"
 dependencies = [
  "ark-bls12-381",
  "ark-bn254",
@@ -1349,8 +1360,8 @@ dependencies = [
 
 [[package]]
 name = "soroban-env-macros"
-version = "27.0.0"
-source = "git+https://github.com/xycloo/retroshades-svm-fork?branch=MER-060#4b7bc821ffab1e30e35fb0cfae661e50bca70e38"
+version = "28.0.2"
+source = "git+https://github.com/xycloo/retroshades-svm-fork?branch=p28-upgrade#1ff2badb2b3c7c0d6e5d03898e23d84b767e4484"
 dependencies = [
  "itertools",
  "proc-macro2",
@@ -1402,7 +1413,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "12d2bf45e114117ea91d820a846fd1afbe3ba7d717988fee094ce8227a3bf8bd"
 dependencies = [
  "base32",
- "crate-git-revision",
+ "crate-git-revision 0.0.6",
  "thiserror",
 ]
 
@@ -1412,20 +1423,20 @@ version = "0.0.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ee1832fb50c651ad10f734aaf5d31ca5acdfb197a6ecda64d93fcdb8885af913"
 dependencies = [
- "crate-git-revision",
+ "crate-git-revision 0.0.6",
  "data-encoding",
 ]
 
 [[package]]
 name = "stellar-xdr"
-version = "27.0.0"
+version = "28.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "05ff843326969bdf1ef673dcdba94c08f4a3c8f1e58d6e6ef39b1bd4f749179a"
+checksum = "f93d09ff8b9f919b084f664003c4c546ac66a76affd5429460dbe29f4b326f8e"
 dependencies = [
  "arbitrary",
  "base64",
  "cfg_eval",
- "crate-git-revision",
+ "crate-git-revision 0.0.9",
  "escape-bytes",
  "ethnum",
  "hex",
