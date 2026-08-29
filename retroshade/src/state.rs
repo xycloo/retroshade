@@ -195,8 +195,14 @@ impl RetroshadesExecution {
     }
 
     fn add_entry(&mut self, entry: &LedgerEntry) {
+        // NB: classic entries must carry no live_until, the p28 host rejects
+        // classic entries paired with a ttl.
+        let live_until = match &entry.data {
+            LedgerEntryData::ContractData(_) | LedgerEntryData::ContractCode(_) => Some(u32::MAX),
+            _ => None,
+        };
         self.target_pre_execution_state
-            .push((entry.clone(), Some(u32::MAX)));
+            .push((entry.clone(), live_until));
     }
 
     fn remove_entry(&mut self, current_state_entry: &LedgerEntry, changed: &mut bool) {
