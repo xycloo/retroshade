@@ -8,8 +8,8 @@ use num_bigint::BigInt;
 use num_traits::FromPrimitive;
 use postgres_types::{to_sql_checked, IsNull, ToSql, Type};
 use soroban_env_host::xdr::{
-    ClaimableBalanceId, Int128Parts, Int256Parts, PublicKey, ScAddress, ScVal, ScVec, UInt128Parts,
-    UInt256Parts,
+    ClaimableBalanceId, Int128Parts, Int256Parts, MuxedContract, PublicKey, ScAddress, ScVal,
+    ScVec, UInt128Parts, UInt256Parts,
 };
 
 const MAX_ALLOWED_RECURSION_DEPTH: usize = 1;
@@ -179,6 +179,9 @@ impl FromScVal {
                         hex::encode(hash.0)
                     }
                     ScAddress::LiquidityPool(pool) => hex::encode(pool.0 .0),
+                    ScAddress::MuxedContract(mc) => {
+                        stellar_strkey::Contract(mc.contract_id.0.into()).to_string()
+                    }
                 };
 
                 FromScVal {
